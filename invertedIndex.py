@@ -43,7 +43,6 @@ if __name__ == "__main__":
     # print(type(handler.docs[5]))
     # print(handler.docs[20]["DocId"])
     # print(handler.docs[20]["Body"])
-
     # print(handler.docs[5])
 
 
@@ -53,7 +52,6 @@ if __name__ == "__main__":
     docs = handler.docs[20]["Body"]
     translation_table = str.maketrans('\+\-\@\$\#\%\^\&\*0987654321\!\?\)\(\,\;\\.\"\\\/', '                                              ')
     docs = docs.translate(translation_table)
-
     tokens = docs.lower().split(" ")
     # print(len(tokens),'start')
     tokens = list(set(tokens))
@@ -64,6 +62,7 @@ if __name__ == "__main__":
     tokens = [x for x in tokens if x not in stopwords]
     # print(len(tokens),'after removeing \'\' and stop words')
     
+
 
     # Lemmatization
     import nltk
@@ -83,7 +82,6 @@ if __name__ == "__main__":
 
     ### start making Inverted Index
 
-    # # docs=[{},{}]
     tokens= lemmatized_words
     # print(tokens)
     # tokens= ['strong', 'edmunds', 'price']
@@ -102,7 +100,8 @@ if __name__ == "__main__":
     # print(len(tokens))
     # print(tokens[1])
 
-    # PostingList={}
+    # df === Document Frecuency
+    # tf === Term Frecuency
     for m in range(len(tokens)):
         PostingList={"df":0, "docs":[]}
         for n in range(len(docs)):
@@ -113,7 +112,7 @@ if __name__ == "__main__":
 
                 # PostingList = index[tokens[m]]
                 tf = docs[n]["Body"].count(tokens[m])#مشخص کردن تعداد کلمه در داکیومتت 
-                PostingList["docs"].append([docs[n]["DocId"],tf])# اضافه کردن عای دی و تعداد به اتربیبیوت داکس هر  کمله
+                PostingList["docs"].append([docs[n]["DocId"],tf])# اضافه کردن عای دی و تعداد به اتریبیوت داکس هر  کلمه
                 PostingList["df"] = PostingList["df"] + 1
                 index[tokens[m]] = PostingList
                 # print(PostingList)
