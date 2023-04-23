@@ -1,22 +1,60 @@
 import xml.dom.minidom
+import os
 
-# Read in the file
-with open('./OpinRank/cars/2008/2008_volkswagen_touareg_2', 'r') as file:
-    # data = file.read()
-    data = file.read().replace("&"," ")
 
-# Add root tag to the data
-data = f'<ROOT>{data}</ROOT>'
+try:
+    dir_path = "./wellFormatedXML"
+    os.mkdir(dir_path)
+    dir_path = "./wellFormatedXML/cars"
+    os.mkdir(dir_path)
+    dir_path = "./wellFormatedXML/cars/2007/"
+    os.mkdir(dir_path)
+    dir_path = "./wellFormatedXML/cars/2008/"
+    os.mkdir(dir_path)
+    dir_path = "./wellFormatedXML/cars/2009/"
+    os.mkdir(dir_path)
+except:
+    None
 
-# Parse the data
-dom = xml.dom.minidom.parseString(data)
+root_directory = "./OpinRank"
+fileList=[]
+# Loop through all directories and subdirectories
+for dirpath, dirnames, filenames in os.walk(root_directory):
+    # Loop through all files in the current directory
+    for filename in filenames:
+        # Do something with the file
+        file_path = os.path.join(dirpath, filename)
+        fileList.append(file_path)
 
-# Pretty print the parsed XML data
-pretty_xml = dom.toprettyxml()
+        # print(filenames)
+# print(fileList)
+for f in fileList:
+    with open(f, 'r') as file:
+        # print(f)
+        # print(file_path)
+        try:
+            data = file.read().replace("&"," ")
 
-# Remove root tag from the data
-# pretty_xml = pretty_xml.replace('<ROOT>\n', '', 1).replace('</ROOT>', '', 1)
+            data = f'<ROOT>{data}</ROOT>'
+            dom = xml.dom.minidom.parseString(data)
+            pretty_xml = dom.toprettyxml()
 
-# Write the pretty XML to a file
-with open('output2.xml', 'w') as file:
-    file.write(pretty_xml)
+
+        # Create a new directory
+        # print(222)
+
+        # Create a new file in the directory
+
+            filename_new = f[11:]
+            dir_path = "./wellFormatedXML"
+            # print(filename_new)
+            file_path_new = os.path.join(dir_path, filename_new)
+            print(file_path_new)
+
+            # Write the pretty XML to a file
+            with open(file_path_new, 'w') as file:
+                file.write(pretty_xml)
+
+        except:
+            None
+        

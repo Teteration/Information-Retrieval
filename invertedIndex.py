@@ -1,4 +1,5 @@
 import xml.sax
+import os
 
 class ReviewHandler(xml.sax.ContentHandler):
     def __init__(self):
@@ -34,15 +35,30 @@ if __name__ == "__main__":
     handler = ReviewHandler()
 
     # parse the XML file using the handler
-    xml.sax.parse("./../output2.xml", handler)
+
+    root_directory = "./wellFormatedXML"
+    # fileList=[]
+    # Loop through all directories and subdirectories
+    for dirpath, dirnames, filenames in os.walk(root_directory):
+        # Loop through all files in the current directory
+        for filename in filenames:
+            # Do something with the file
+            file_path = os.path.join(dirpath, filename)
+            # fileList.append(file_path)
+
+            # print(filenames)
+            # print(file_path)
+    # print(fileList)
+            xml.sax.parse(file_path, handler)
+            # final = handler.docs
 
 
     # print the list of docs
     # print(handler.docs)
-    # print(len(handler.docs))
+    print(len(handler.docs))
     # print(type(handler.docs[5]))
     # print(handler.docs[20]["DocId"])
-    # print(handler.docs[20]["Body"])
+    # print(handler.docs[20000]["Body"])
     # print(handler.docs[5])
 
 
@@ -50,6 +66,11 @@ if __name__ == "__main__":
 
     #Tokenization
     docs = handler.docs[20]["Body"]
+    for i in range(len(handler.docs)):
+        docs = docs + handler.docs[i]["Body"]
+
+
+    print(len(docs))
     translation_table = str.maketrans('\+\-\@\$\#\%\^\&\*0987654321\!\?\)\(\,\;\\.\"\\\/', '                                              ')
     docs = docs.translate(translation_table)
     tokens = docs.lower().split(" ")
@@ -102,15 +123,14 @@ if __name__ == "__main__":
 
     # df === Document Frecuency
     # tf === Term Frecuency
+
+
     for m in range(len(tokens)):
         PostingList={"df":0, "docs":[]}
         for n in range(len(docs)):
 
             if tokens[m] in docs[n]["Body"]:
 
-                # print(tokens[m])
-
-                # PostingList = index[tokens[m]]
                 tf = docs[n]["Body"].count(tokens[m])#مشخص کردن تعداد کلمه در داکیومتت 
                 PostingList["docs"].append([docs[n]["DocId"],tf])# اضافه کردن عای دی و تعداد به اتریبیوت داکس هر  کلمه
                 PostingList["df"] = PostingList["df"] + 1
@@ -119,6 +139,6 @@ if __name__ == "__main__":
 
 
     
-    print(index)
+    # print(index)
     print(len(index))
 
