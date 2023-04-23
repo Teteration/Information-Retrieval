@@ -34,11 +34,7 @@ if __name__ == "__main__":
     handler = ReviewHandler()
 
     # parse the XML file using the handler
-    xml.sax.parse("./output2.xml", handler)
-
-    with open('./testtt.txt', 'w') as f:
-        f.write(str(handler.docs))
-
+    xml.sax.parse("./../output2.xml", handler)
 
 
     # print the list of docs
@@ -90,9 +86,9 @@ if __name__ == "__main__":
     # # docs=[{},{}]
     tokens= lemmatized_words
     # print(tokens)
+    # tokens= ['strong', 'edmunds', 'price']
+    # tokens=['price','car','money']
 
-
-    tokens= ['strong', 'edmunds', 'price']
     index={}
     docs = handler.docs
     # print(docs)
@@ -102,28 +98,28 @@ if __name__ == "__main__":
 
     # print(str(docs).count("price"))
     # print(len(docs))
-    j=0
-    for i in range(len(docs)):
-        if docs[i]["Body"].count("prfgdfgice")>1:
-            print("44444444444444444444444444444444444444444")
-            print(docs[i]["Body"])
-            j=+1   
-    print(j)
-            # print(1)
 
-    # for m in range(len(tokens)):
-    #     for n in range(len(docs)):
-    #         PostingList={"df":0, "docs":[]}
-    #         if tokens[m] in docs[n]["Body"]:
+    # print(len(tokens))
+    # print(tokens[1])
 
-    #             print(tokens[m])
+    # PostingList={}
+    for m in range(len(tokens)):
+        PostingList={"df":0, "docs":[]}
+        for n in range(len(docs)):
+
+            if tokens[m] in docs[n]["Body"]:
+
+                # print(tokens[m])
 
                 # PostingList = index[tokens[m]]
-                # tf = docs[n]["Body"].count(tokens[m])
-                # PostingList["df"] =+ 1
-                # PostingList["docs"].append([docs[n]["DocId"],tf])
-                # index[tokens[m]] = PostingList
+                tf = docs[n]["Body"].count(tokens[m])#مشخص کردن تعداد کلمه در داکیومتت 
+                PostingList["docs"].append([docs[n]["DocId"],tf])# اضافه کردن عای دی و تعداد به اتربیبیوت داکس هر  کمله
+                PostingList["df"] = PostingList["df"] + 1
+                index[tokens[m]] = PostingList
+                # print(PostingList)
+
 
     
-    # print(index)
+    print(index)
+    print(len(index))
 
