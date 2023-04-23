@@ -6,6 +6,14 @@ class ReviewHandler(xml.sax.ContentHandler):
         self.body = ""
         self.name = ""
         self.docs = []
+
+    def startElement(self, name, attrs):
+        if name == "DOCNO":
+            self.name = ""
+        elif name == "DOC":
+            self.body = ""
+        elif name == "TEXT" or name == "FAVORITE":
+            self.body += ""
         
     def endElement(self, name):
         if name == "DOCNO":
@@ -27,6 +35,11 @@ if __name__ == "__main__":
 
     # parse the XML file using the handler
     xml.sax.parse("./output2.xml", handler)
+
+    with open('./testtt.txt', 'w') as f:
+        f.write(str(handler.docs))
+
+
 
     # print the list of docs
     # print(handler.docs)
@@ -50,7 +63,7 @@ if __name__ == "__main__":
     tokens = list(set(tokens))
     # print(len(tokens),'after removing duplicate values and special chars')
     
-    with open('stopwords.txt', 'r') as f:
+    with open('./stopwords.txt', 'r') as f:
         stopwords = [line.rstrip() for line in f.readlines()]
     tokens = [x for x in tokens if x not in stopwords]
     # print(len(tokens),'after removeing \'\' and stop words')
@@ -76,16 +89,41 @@ if __name__ == "__main__":
 
     # # docs=[{},{}]
     tokens= lemmatized_words
+    # print(tokens)
+
+
+    tokens= ['strong', 'edmunds', 'price']
     index={}
     docs = handler.docs
+    # print(docs)
 
-    for m in range(len(tokens)):
-        for n in range(len(docs)):
-            PostingList={"df":0, "docs":[]}
-            if tokens[m] in docs[n]["Body"]:
-                PostingList = index[tokens[m]]
-                tf = docs[n]["Body"].count(tokens[m])
-                PostingList["df"] =+ 1
-                PostingList["docs"].append([docs[n]["DocId"],tf])
-                index[tokens[m]] = PostingList
+    # with open('./tes.txt', 'w') as f:
+    #     f.write(str(docs))
+
+    # print(str(docs).count("price"))
+    # print(len(docs))
+    j=0
+    for i in range(len(docs)):
+        if docs[i]["Body"].count("prfgdfgice")>1:
+            print("44444444444444444444444444444444444444444")
+            print(docs[i]["Body"])
+            j=+1   
+    print(j)
+            # print(1)
+
+    # for m in range(len(tokens)):
+    #     for n in range(len(docs)):
+    #         PostingList={"df":0, "docs":[]}
+    #         if tokens[m] in docs[n]["Body"]:
+
+    #             print(tokens[m])
+
+                # PostingList = index[tokens[m]]
+                # tf = docs[n]["Body"].count(tokens[m])
+                # PostingList["df"] =+ 1
+                # PostingList["docs"].append([docs[n]["DocId"],tf])
+                # index[tokens[m]] = PostingList
+
+    
+    # print(index)
 
