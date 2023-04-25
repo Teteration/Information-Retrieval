@@ -1,0 +1,6 @@
+1- more stop words
+2- search in invertedIndex.txt and analyze the terms for reduction
+3- convert invertIndex.txt to Json
+4- faster procces
+    current run-time: 14 min
+5- why the rum-time, invertedIndex size and tokens increase?
