@@ -1,6 +1,7 @@
 import os
-import xml.sax
 import json
+import xml.sax
+import logging
 from nltk.corpus import wordnet 
 from nltk.stem import WordNetLemmatizer
 
@@ -10,7 +11,8 @@ class ReviewHandler(xml.sax.ContentHandler):
         self.docid = 0
         self.body = ""
         self.name = ""
-        self.docs = []
+        # self.docs = []
+        self.docs = {}
 
     def startElement(self, name, attrs):
         if name == "DOCNO":
@@ -28,8 +30,10 @@ class ReviewHandler(xml.sax.ContentHandler):
             self.body = self.body.strip()+self.current_data.strip()
         elif name == "DOC":
             self.docid += 1
-            doc = {"DocId": self.docid, "Body": self.body.strip(), "Name": self.name}
-            self.docs.append(doc)
+            # doc = {"DocId": self.docid, "Body": self.body.strip(), "Name": self.name}
+            doc = {"Body": self.body.strip(), "Name": self.name }
+            # self.docs.append(doc)
+            self.docs[self.docid]= doc
 
     def characters(self, content):
         self.current_data = content.strip()
@@ -41,11 +45,11 @@ handler = ReviewHandler()
 
 
 def Fetch_Docs():
-    # make a dictionary with following format => {"DocID": ,"Body": ,"Name": } from XML file.
+    # make a dictionary with following format => {"DocId": {"Body": ,"Name": }} from XML file.
 
     # Test
     xml.sax.parse('o.txt', handler)
-    docs = handler.docs[3]["Body"]
+    docs = handler.docs
     # Test
 
 
@@ -62,6 +66,7 @@ def Fetch_Docs():
     # docs = ''
     # for i in range(len(handler.docs)):
     #     docs = docs + handler.docs[i]["Body"]
+    # docs = handler.docs
     #Main
 
 
@@ -75,8 +80,7 @@ def Fetch_Docs():
 
 
 
-    docs= handler.docs
-    # docs is a dictionary with following format => {"DocID": ,"Body": ,"Name": }
+    # docs is a dictionary with following format => {"DocId": {"Body": ,"Name": }}
     return docs
 
 
@@ -86,10 +90,10 @@ def Fetch_Docs():
 
 def Dict2Str(dict):
 
-    # get a dictionary with following format => {"DocID": ,"Body": ,"Name": } and return its "Body" key
+    # get a dictionary with following format => {"DocId": {"Body": ,"Name": }} and return its "Body" key
 
     String =''
-    for i in range(len(dict)):
+    for i in dict.keys():
         String = String + dict[i]["Body"]
 
     return String
@@ -103,8 +107,8 @@ def Cleaner(string):
     # input = string
     # output = token
 
-    translation_table = str.maketrans('\+\-\=\_\@\$\#\%\^\&\*0987654321\!\?\)\(\,\;\\.\"\\\/',
-                                       '                                                  ')
+    translation_table = str.maketrans('\:\{\}\[\]\+\-\=\_\@\$\#\%\^\&\*0987654321\!\?\)\(\,\;\\.\"\'\\\/',
+                                       '                                                             ')
     string = string.translate(translation_table)
     tokens = string.lower().split(" ")
     # print(len(tokens),'start')
@@ -129,6 +133,10 @@ def Lemmatizer(wordList):
     lemmatizer = WordNetLemmatizer()
     lemmatized_words = [lemmatizer.lemmatize(word, wordnet.VERB) for word in wordList]
     lemmatized_words = list(set(lemmatized_words))
+
+    with open('./stopwords.txt', 'r') as f:
+        stopwords = [line.rstrip() for line in f.readlines()]
+    lemmatized_words = [x for x in lemmatized_words if x not in stopwords]
     # print(lemmatized_words)
     # print(len(lemmatized_words),'after removing duplicate values due to words with the same stem like loving, loved => love ')
     return lemmatized_words
@@ -146,6 +154,7 @@ def Tokenizer(text):
 
 
 def invertedIndex(tokens, docs):
+
 
     # input: list and dictionary with following format:
     #    tokens: ['Word1','Word2','Word3', ...]
@@ -168,21 +177,43 @@ def invertedIndex(tokens, docs):
     for m in range(len(tokens)):
 
         PostingList={"df":0, "docs":[]}
-        for n in range(len(docs)):
+        for n in docs.keys():
 
             if tokens[m] in docs[n]["Body"]:
 
-                tf = docs[n]["Body"].count(tokens[m])#مشخص کردن تعداد کلمه در داکیومتت 
+                tf = docs[n]["Body"].count(tokens[m])
                 # if tf >= 20:
                     # print(tokens[m]," : ",tf)
-                PostingList["docs"].append([docs[n]["DocId"],tf])# اضافه کردن عای دی و تعداد به اتریبیوت داکس هر  کلمه
+                PostingList["docs"].append([n,tf])
                 PostingList["df"] = PostingList["df"] + 1
                 index[tokens[m]] = PostingList
 
                 # index[tokens[m]] = json.dumps(PostingList)
                 # final_index = json.dumps(index)
-
+    # print(docs.keys())
     return index
+
+
+
+
+
+
+
+def prompt(entry,invertedIndex):
+    # output: list of ordered pair with following format
+    #         [[DocId,tf], [DocId,tf], [DocId,tf], ...]
+
+    return invertedIndex[entry]["docs"]
+
+
+
+
+
+def DocId2Text(DocId,docs):
+
+    return docs[DocId]["Body"]
+
+
 
 
 
@@ -190,8 +221,32 @@ def invertedIndex(tokens, docs):
 
 # To see the process step by step, Run the following lines one by one
 
-# print(Fetch_Docs())
+docs=Fetch_Docs()
+# print(docs)
 # print(Dict2Str(Fetch_Docs()))
-# print(Tokenizer(Dict2Str(Fetch_Docs())))
-print(invertedIndex(Tokenizer(Dict2Str(Fetch_Docs())),Fetch_Docs()))
-print("\n\nuncomment lines 54-64 and comment lines 47-48 to make index with origin data.\n")
+# print(Tokenizer(Dict2Str(docs)))
+# print(invertedIndex(Tokenizer(Dict2Str(docs)),docs))
+
+# print("\n\nuncomment lines 54-64 and comment lines 47-48 to make index with origin data.\n")
+
+
+
+
+Index = invertedIndex(Tokenizer(Dict2Str(docs)),docs)
+# print(Index)
+while True:
+    entry = input("Entry : ")
+    try:
+        print('ordered pair',prompt(entry, Index),'\n')
+        DocId = [ x[0] for x in prompt(entry, Index)]
+        print("DocId : ",DocId,'\n')
+
+        for i in range(len(DocId)):
+            print(DocId2Text(DocId[i],Fetch_Docs()),'\n\n')
+    except BaseException:
+        logging.exception("*Error goes here*")
+
+    
+
+
+
