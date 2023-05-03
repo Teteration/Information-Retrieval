@@ -236,15 +236,30 @@ Index = invertedIndex(Tokenizer(Dict2Str(docs)),docs)
 # print(Index)
 while True:
     entry = input("Entry : ")
+    entry = Tokenizer(entry)
+    print(entry)
     try:
-        print('ordered pair',prompt(entry, Index),'\n')
-        DocId = [ x[0] for x in prompt(entry, Index)]
+        DocId=[]
+        for word in entry:
+            pair=set({})
+            # print('ordered pair',prompt(word, Index),'\n')
+            for x in prompt(word, Index):
+                pair.add(x[0])
+            DocId.append(pair)
+            print(pair)
         print("DocId : ",DocId,'\n')
 
+
         for i in range(len(DocId)):
-            print(DocId2Text(DocId[i],Fetch_Docs()),'\n\n')
+            x = DocId[0].intersection(DocId[i])
+        print(x)
+
+
+        for i in x:
+            print(DocId2Text(i,docs),'\n\n')
     except BaseException:
         logging.exception("*Error goes here*")
+        # print("Not Exist!\n")
 
     
 
