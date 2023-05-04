@@ -48,25 +48,25 @@ def Fetch_Docs():
     # make a dictionary with following format => {"DocId": {"Body": ,"Name": }} from XML file.
 
     # Test
-    xml.sax.parse('o.txt', handler)
-    docs = handler.docs
+    # xml.sax.parse('o.txt', handler)
+    # docs = handler.docs
     # Test
 
 
 
     # Main
-    # root_directory = "./wellFormatedXML"
-    # for dirpath, dirname,filenames in os.walk(root_directory):
-    #     for filename in filenames:
-    #         file_path = os.path.join(dirpath, filename)
+    root_directory = "./wellFormatedXML"
+    for dirpath, dirname,filenames in os.walk(root_directory):
+        for filename in filenames:
+            file_path = os.path.join(dirpath, filename)
 
-    #         # parse the XML file using the handler
-    #         xml.sax.parse(file_path, handler)
+            # parse the XML file using the handler
+            xml.sax.parse(file_path, handler)
 
     # docs = ''
     # for i in range(len(handler.docs)):
     #     docs = docs + handler.docs[i]["Body"]
-    # docs = handler.docs
+    docs = handler.docs
     #Main
 
 
@@ -237,8 +237,9 @@ Index = invertedIndex(Tokenizer(Dict2Str(docs)),docs)
 while True:
     entry = input("Entry : ")
     entry = Tokenizer(entry)
-    print(entry)
+    # print(entry)
     try:
+
         DocId=[]
         for word in entry:
             pair=set({})
@@ -252,14 +253,16 @@ while True:
 
         for i in range(len(DocId)):
             x = DocId[0].intersection(DocId[i])
-        print(x)
+        print("intersection: ", x)
 
 
         for i in x:
             print(DocId2Text(i,docs),'\n\n')
+
+
     except BaseException:
-        logging.exception("*Error goes here*")
-        # print("Not Exist!\n")
+        # logging.exception("*Error goes here*")
+        print("Not Exist!\n")
 
     
 

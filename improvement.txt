@@ -3,4 +3,6 @@
 3- convert invertIndex.txt to Json
 4- faster procces
     current run-time: 14 min
+    current run-time: 7 min
 5- why the rum-time, invertedIndex size and tokens increase?
+6- sometimes return just many number or some doc that does not contain all terms of query
