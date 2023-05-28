@@ -242,44 +242,47 @@ docs=Fetch_Docs()
 # print(docs)
 # print(Dict2Str(Fetch_Docs()))
 # print(Tokenizer(Dict2Str(docs)))
-print(invertedIndex(Tokenizer(Dict2Str(docs)),docs))
+# print(invertedIndex(Tokenizer(Dict2Str(docs)),docs))
 
 # print("\n\nuncomment lines 54-64 and comment lines 47-48 to make index with origin data.\n")
 
 
 
 
-# Index = invertedIndex(Tokenizer(Dict2Str(docs)),docs)
-# # print(Index)
-# while True:
-#     entry = input("Entry : ")
-#     entry = Tokenizer(entry)
-#     # print(entry)
-#     try:
+Index = invertedIndex(Tokenizer(Dict2Str(docs)),docs)
+# print(Index)
+while True:
+    entry = input("Entry : ")
+    entry = Tokenizer(entry)
+    # print(entry)
+    try:
 
-#         DocId=[]
-#         for word in entry:
-#             pair=set({})
-#             # print('ordered pair',prompt(word, Index),'\n')
-#             for x in prompt(word, Index):
-#                 pair.add(x[0])
-#             DocId.append(pair)
-#             print(pair)
-#         print("DocId : ",DocId,'\n')
-
-
-#         for i in range(len(DocId)):
-#             x = DocId[0].intersection(DocId[i])
-#         print("intersection: ", x)
+        DocId=[]
+        for word in entry:
+            pair=set({})
+            print('ordered pair',prompt(word, Index),'\n')
+            for x in prompt(word, Index):
+                pair.add(x[0])
+            DocId.append(pair)
+            print(pair)
+        print("DocId : ",DocId,'\n')
 
 
-#         for i in x:
-#             print(DocId2Text(i,docs),'\n\n')
+        # calc intersection
+        for i in range(len(DocId)):
+            x = DocId[0].intersection(DocId[i])
+        print("intersection: ", x)
 
 
-#     except BaseException:
-#         # logging.exception("*Error goes here*")
-#         print("Not Exist!\n")
+
+        # print final doc
+        for i in x:
+            print(DocId2Text(i,docs),'\n\n')
+
+
+    except BaseException:
+        # logging.exception("*Error goes here*")
+        print("Not Exist!\n")
 
     
 
