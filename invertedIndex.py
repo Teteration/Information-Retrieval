@@ -183,7 +183,7 @@ def invertedIndex(tokens, docs):
                 # w(t,d) instead tf
                 tf = docs[n]["Body"].count(tokens[m])
                 if tf > 0:
-                    wtd = 1 + round(math.log(tf),2)
+                    wtd = round((1 + math.log(tf)),2)
                 else:
                     tf = 0
 
@@ -251,42 +251,127 @@ docs=Fetch_Docs()
 
 Index = invertedIndex(Tokenizer(Dict2Str(docs)),docs)
 # print(Index)
+
+
 while True:
     entry = input("Entry : ")
     entry = Tokenizer(entry)
-    # print(entry)
-    try:
-
-        DocId=[]
-        for word in entry:
-            pair=set({})
-            print('ordered pair',prompt(word, Index),'\n')
-            for x in prompt(word, Index):
-                pair.add(x[0])
-            DocId.append(pair)
-            print(pair)
-        print("DocId : ",DocId,'\n')
+    print('this is entry : ', entry)
 
 
-        # calc intersection
-        for i in range(len(DocId)):
-            x = DocId[0].intersection(DocId[i])
-        print("intersection: ", x)
+    score = {}
+    for query_term in entry:    
+        try:
+        # print('\n',Index[query_term],'\n')
+
+            PostingList = prompt(query_term,Index)
+            print('\nPosting list: ',PostingList,'\n')
+            # print(len(PostingList))
+
+
+            DocId=[]
+            for x in PostingList:
+                DocId.append(x[0])
+            print('DocId',DocId,'\n')
+
+
+            tf_idf = []
+            for x in PostingList:
+                tf = x[1]
+                iDF = Index[query_term]["iDF"]
+                tf_idf.append(round((tf*iDF),2))
+            print('tf_idf: ',tf_idf,'\n\n')
+
+
+            # make score with DocId and tf_idf => {'DocId': tf_idf, 'DocId': tf_idf} => e.g. {'1': 3.5 ,'7': 13.9}
+            for key in DocId:
+                for value in tf_idf:
+                    # score[str(key)] = score[str(key)] + value
+                    # if score[str(key)] is None:
+                    #     score[str(key)] = 0
+                    # print(score[str(key)])
+                    # score[str(key)] =  1
+                    if str(key) in score.keys():
+                        score[str(key)] += value
+                        score[str(key)] = round(score[str(key)],2)
+                    else:
+                        score[str(key)] = value
+                        score[str(key)] = round(score[str(key)],2)
+                    tf_idf.remove(value)
+                    break
+            # print('\n',score)
 
 
 
-        # print final doc
-        for i in x:
-            print(DocId2Text(i,docs),'\n\n')
 
 
-    except BaseException:
-        # logging.exception("*Error goes here*")
-        print("Not Exist!\n")
-
-    
+#for each term in docs:
+#   score = calc tf_idf for each docs: ( relevency of doc / query )
+#sort docs based on score
+#return top k
 
 
 
-# put tf , iDF in inverted index, میشه کاملا جایگززین کرد به جای اضافه کردن
-# calc E tf.iDF for intersect term
+#for each query_term in doc:
+#   score = calc tf_idf of each query_term for each docs: ( relevency of doc / query )
+#   score_d = sum of tf_idf for each query_term in d
+#   امتیاز سند = مجموع بردار وزن دار کلمات مشترک با کوئری
+#   یعنی با این روش یک سری سند هست که شامل بیشترین تعداد کويری ترم هست هچنین سند های دیگری با این شرایط کم هست تا اسنادی که امتیازشون صفره
+#   یعنی هیچ کلمه مشترکی ندارن
+
+#   حالا لول بعدی اینکه که سمنتیک هم لحاظ کنیم
+
+
+
+
+
+
+
+
+
+            # DocId=[]
+            # for word in entry:
+            #     pair=set({})
+            #     print('ordered pair',prompt(word, Index),'\n')
+            #     for x in prompt(word, Index):
+            #         pair.add(x[0])
+            #     DocId.append(pair)
+            #     print(pair)
+            # print("DocId : ",DocId,'\n')
+
+
+            # # calc intersection
+            # for i in range(len(DocId)):
+            #     x = DocId[0].intersection(DocId[i])
+            # print("intersection: ", x)
+
+
+
+
+
+
+        except BaseException:
+            # logging.exception("*Error goes here*")
+            print("Not Exist!\n")
+
+    print('\n',score,'\n\n')
+
+    # sort ascending
+    sorted_score = {k: v for k, v in sorted(score.items(), key=lambda item: item[1],reverse=True)}
+    # sorted_score = {k: v for k, v in sorted(score.items(), key=lambda item: item[1])}
+    print(sorted_score,'\n\n')
+
+
+
+    # return top 5
+    first5pairs = {k: sorted_score[k] for k in list(sorted_score)[:5]}        
+    print(first5pairs,'\n\n')
+
+
+
+    # print final doc
+    for i in list(first5pairs.keys()):
+    # print(first5pairs.keys())
+        # print(list(first5pairs.keys()))
+        print(DocId2Text(int(i),docs),'\n\n')
+
