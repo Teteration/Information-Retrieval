@@ -1,10 +1,10 @@
 import os
 import json
+import math
 import xml.sax
 import logging
 from nltk.corpus import wordnet 
 from nltk.stem import WordNetLemmatizer
-
 
 class ReviewHandler(xml.sax.ContentHandler):
     def __init__(self):
@@ -48,26 +48,26 @@ def Fetch_Docs():
     # make a dictionary with following format => {"DocId": {"Body": ,"Name": }} from XML file.
 
     # Test
-    # xml.sax.parse('o.txt', handler)
-    # docs = handler.docs
+    xml.sax.parse('o.txt', handler)
+    docs = handler.docs
     # Test
 
 
 
     # Main
-    root_directory = "./wellFormatedXML"
-    for dirpath, dirname,filenames in os.walk(root_directory):
-        for filename in filenames:
-            file_path = os.path.join(dirpath, filename)
+    # root_directory = "./wellFormatedXML"
+    # for dirpath, dirname,filenames in os.walk(root_directory):
+    #     for filename in filenames:
+    #         file_path = os.path.join(dirpath, filename)
 
-            # parse the XML file using the handler
-            xml.sax.parse(file_path, handler)
+    #         # parse the XML file using the handler
+    #         xml.sax.parse(file_path, handler)
 
-    # docs = ''
-    # for i in range(len(handler.docs)):
-    #     docs = docs + handler.docs[i]["Body"]
-    docs = handler.docs
-    #Main
+    # # docs = ''
+    # # for i in range(len(handler.docs)):
+    # #     docs = docs + handler.docs[i]["Body"]
+    # docs = handler.docs
+    # #Main
 
 
 
@@ -158,7 +158,7 @@ def invertedIndex(tokens, docs):
 
     # input: list and dictionary with following format:
     #    tokens: ['Word1','Word2','Word3', ...]
-    #    docs  : {"DocID": ,"Body": ,"Name": }
+    #    docs  : {"DocID": {"Body": ,"Name": }}
 
     # output: dictionary as inverted index with following format:
     #          {
@@ -176,17 +176,34 @@ def invertedIndex(tokens, docs):
 
     for m in range(len(tokens)):
 
-        PostingList={"df":0, "docs":[]}
+        PostingList={"iDF":0, "docs":[]}
         for n in docs.keys():
 
             if tokens[m] in docs[n]["Body"]:
-
+                # w(t,d) instead tf
                 tf = docs[n]["Body"].count(tokens[m])
-                # if tf >= 20:
-                    # print(tokens[m]," : ",tf)
-                PostingList["docs"].append([n,tf])
-                PostingList["df"] = PostingList["df"] + 1
-                index[tokens[m]] = PostingList
+                if tf > 0:
+                    wtd = 1 + round(math.log(tf),2)
+                else:
+                    tf = 0
+
+                PostingList["docs"].append([n,wtd])
+                PostingList["iDF"] = PostingList["iDF"] + 1
+
+
+        Nd = len(docs.keys())
+        # Nd ==== number of total documents
+
+        df = PostingList["iDF"]
+        # iDF instead DF
+        if df != 0:
+            PostingList["iDF"] = round(math.log(Nd/df),2)
+
+
+
+        index[tokens[m]] = PostingList
+
+
 
                 # index[tokens[m]] = json.dumps(PostingList)
                 # final_index = json.dumps(index)
@@ -225,46 +242,48 @@ docs=Fetch_Docs()
 # print(docs)
 # print(Dict2Str(Fetch_Docs()))
 # print(Tokenizer(Dict2Str(docs)))
-# print(invertedIndex(Tokenizer(Dict2Str(docs)),docs))
+print(invertedIndex(Tokenizer(Dict2Str(docs)),docs))
 
 # print("\n\nuncomment lines 54-64 and comment lines 47-48 to make index with origin data.\n")
 
 
 
 
-Index = invertedIndex(Tokenizer(Dict2Str(docs)),docs)
-# print(Index)
-while True:
-    entry = input("Entry : ")
-    entry = Tokenizer(entry)
-    # print(entry)
-    try:
+# Index = invertedIndex(Tokenizer(Dict2Str(docs)),docs)
+# # print(Index)
+# while True:
+#     entry = input("Entry : ")
+#     entry = Tokenizer(entry)
+#     # print(entry)
+#     try:
 
-        DocId=[]
-        for word in entry:
-            pair=set({})
-            # print('ordered pair',prompt(word, Index),'\n')
-            for x in prompt(word, Index):
-                pair.add(x[0])
-            DocId.append(pair)
-            print(pair)
-        print("DocId : ",DocId,'\n')
-
-
-        for i in range(len(DocId)):
-            x = DocId[0].intersection(DocId[i])
-        print("intersection: ", x)
+#         DocId=[]
+#         for word in entry:
+#             pair=set({})
+#             # print('ordered pair',prompt(word, Index),'\n')
+#             for x in prompt(word, Index):
+#                 pair.add(x[0])
+#             DocId.append(pair)
+#             print(pair)
+#         print("DocId : ",DocId,'\n')
 
 
-        for i in x:
-            print(DocId2Text(i,docs),'\n\n')
+#         for i in range(len(DocId)):
+#             x = DocId[0].intersection(DocId[i])
+#         print("intersection: ", x)
 
 
-    except BaseException:
-        # logging.exception("*Error goes here*")
-        print("Not Exist!\n")
+#         for i in x:
+#             print(DocId2Text(i,docs),'\n\n')
+
+
+#     except BaseException:
+#         # logging.exception("*Error goes here*")
+#         print("Not Exist!\n")
 
     
 
 
 
+# put tf , iDF in inverted index, میشه کاملا جایگززین کرد به جای اضافه کردن
+# calc E tf.iDF for intersect term
