@@ -157,8 +157,8 @@ def invertedIndex(tokens, docs):
 
 
     # input: list and dictionary with following format:
-    #    tokens: ['Word1','Word2','Word3', ...]
-    #    docs  : {"DocID": {"Body": ,"Name": }}
+    #                   tokens: ['Word1','Word2','Word3', ...]
+    #                   docs  : {"DocID": {"Body": ,"Name": }}
 
     # output: dictionary as inverted index with following format:
     #          {
@@ -179,7 +179,7 @@ def invertedIndex(tokens, docs):
         PostingList={"iDF":0, "docs":[]}
         for n in docs.keys():
 
-            if tokens[m] in docs[n]["Body"]:
+            if tokens[m] in docs[n]["Body"].lower():
                 # w(t,d) instead tf
                 tf = docs[n]["Body"].count(tokens[m])
                 if tf > 0:
@@ -236,6 +236,71 @@ def DocId2Text(DocId,docs):
 
 
 
+
+
+###################### System Evaluation #####################
+
+
+# it shoud read docs from file or DB
+def ValidationSet(docs):
+    # input  =>  {"DocID": {"Body": ,"Name": }}
+    # output =>  {'fileName1': [DocId1, DocId2, DocId3], 'fileName2': [DocId4, DocId5, DocId6]}
+
+    ValidationSet = {}
+    for DocId in docs.keys():
+        fileName = docs[DocId]["Name"]
+
+        if fileName in ValidationSet.keys():
+            ValidationSet[fileName].append(DocId)
+        else:
+            # DocId = item
+            ValidationSet[fileName] = [DocId]
+
+
+    # return len(ValidationSet)
+    return ValidationSet
+
+
+
+
+
+
+
+def Recall_K(relevency_list, validation_set,entry):
+    # tp : True Positive
+    relevent = relevency_list.count(1)
+
+    # تعداد کل داکیومنت هایی که نام فایلشان با کوعری برابر است
+    total_relevent = len(validation_set[entry])
+
+    Recall = relevent / total_relevent
+
+    return Recall
+
+
+
+
+
+
+def Precision_K(relevency_list):
+    # tp : True Positive
+    tp = relevency_list.count(1)
+    total = len(relevency_list)
+
+    precision = tp / total
+
+
+    return precision
+
+
+
+
+
+
+
+
+
+
 # To see the process step by step, Run the following lines one by one
 
 docs=Fetch_Docs()
@@ -254,8 +319,8 @@ Index = invertedIndex(Tokenizer(Dict2Str(docs)),docs)
 
 
 while True:
-    entry = input("Entry : ")
-    entry = Tokenizer(entry)
+    entry1 = input("Entry : ")
+    entry = Tokenizer(entry1)
     print('this is entry : ', entry)
 
 
@@ -286,11 +351,6 @@ while True:
             # make score with DocId and tf_idf => {'DocId': tf_idf, 'DocId': tf_idf} => e.g. {'1': 3.5 ,'7': 13.9}
             for key in DocId:
                 for value in tf_idf:
-                    # score[str(key)] = score[str(key)] + value
-                    # if score[str(key)] is None:
-                    #     score[str(key)] = 0
-                    # print(score[str(key)])
-                    # score[str(key)] =  1
                     if str(key) in score.keys():
                         score[str(key)] += value
                         score[str(key)] = round(score[str(key)],2)
@@ -305,45 +365,21 @@ while True:
 
 
 
-#for each term in docs:
-#   score = calc tf_idf for each docs: ( relevency of doc / query )
-#sort docs based on score
-#return top k
+    #for each term in docs:
+    #   score = calc tf_idf for each docs: ( relevency of doc / query )
+    #sort docs based on score
+    #return top k
 
 
 
-#for each query_term in doc:
-#   score = calc tf_idf of each query_term for each docs: ( relevency of doc / query )
-#   score_d = sum of tf_idf for each query_term in d
-#   امتیاز سند = مجموع بردار وزن دار کلمات مشترک با کوئری
-#   یعنی با این روش یک سری سند هست که شامل بیشترین تعداد کويری ترم هست هچنین سند های دیگری با این شرایط کم هست تا اسنادی که امتیازشون صفره
-#   یعنی هیچ کلمه مشترکی ندارن
+    #for each query_term in doc:
+    #   score = calc tf_idf of each query_term for each docs: ( relevency of doc / query )
+    #   score_d = sum of tf_idf for each query_term in d
+    #   امتیاز سند = مجموع بردار وزن دار کلمات مشترک با کوئری
+    #   یعنی با این روش یک سری سند هست که شامل بیشترین تعداد کويری ترم هست هچنین سند های دیگری با این شرایط کم هست تا اسنادی که امتیازشون صفره
+    #   یعنی هیچ کلمه مشترکی ندارن
 
-#   حالا لول بعدی اینکه که سمنتیک هم لحاظ کنیم
-
-
-
-
-
-
-
-
-
-            # DocId=[]
-            # for word in entry:
-            #     pair=set({})
-            #     print('ordered pair',prompt(word, Index),'\n')
-            #     for x in prompt(word, Index):
-            #         pair.add(x[0])
-            #     DocId.append(pair)
-            #     print(pair)
-            # print("DocId : ",DocId,'\n')
-
-
-            # # calc intersection
-            # for i in range(len(DocId)):
-            #     x = DocId[0].intersection(DocId[i])
-            # print("intersection: ", x)
+    #   حالا لول بعدی اینکه که سمنتیک هم لحاظ کنیم
 
 
 
@@ -356,7 +392,9 @@ while True:
 
     print('\n',score,'\n\n')
 
-    # sort ascending
+
+
+    # Sort Ascending
     sorted_score = {k: v for k, v in sorted(score.items(), key=lambda item: item[1],reverse=True)}
     # sorted_score = {k: v for k, v in sorted(score.items(), key=lambda item: item[1])}
     print(sorted_score,'\n\n')
@@ -369,9 +407,58 @@ while True:
 
 
 
-    # print final doc
-    for i in list(first5pairs.keys()):
-    # print(first5pairs.keys())
-        # print(list(first5pairs.keys()))
-        print(DocId2Text(int(i),docs),'\n\n')
+
+
+
+
+
+    # Pseudo Code
+    # System Evaluation : Average Percision and Mean Average Percision
+    # for each query return R@k/P@k than Average Percision and finally for all query return MAP
+    #
+    # 1- Document Score : {'DocId': score , ... } => {'43':3.6, '982':7.21, ... }
+    # 2- Evaluation Set : {'Query': [DocId1,DocId2 , ... } => {'fileName': [DocIds in file], ... }
+    # 3- for doc in top-K:
+    #       calc R@k/P@k:{        
+    #       }
+    #      
+    # check if Docid in dict['filename']
+
+
+
+
+    # print final doc and result( R@k/P@k => AP => MAP)
+    #    docs  : {"DocID": {"Body": ,"Name": }}
+
+
+    relevency=[]
+    # it is binery representaion of relevency => 0 : Not relevent,
+    #                                            1 : relevent
+
+    top_K_doc = list(first5pairs.keys())
+    for Docid in top_K_doc:
+        print(DocId2Text(int(Docid),docs),'\n\n')
+
+        # [5:] => convert 2007_carName to carName
+        fileName = docs[int(Docid)]["Name"][5:]
+        
+        if fileName == entry1:
+            relevency.append(1)
+        else:
+            relevency.append(0)
+            print(entry1 ,'!=',fileName)
+
+
+    print('relevency: ',relevency)
+
+
+
+
+    # print('validation set : ',ValidationSet(docs))
+
+
+
+
+
+
 
