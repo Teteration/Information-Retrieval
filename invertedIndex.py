@@ -48,25 +48,24 @@ def Fetch_Docs():
     # make a dictionary with following format => {"DocId": {"Body": ,"Name": }} from XML file.
 
     # Test
-    xml.sax.parse('o.txt', handler)
-    docs = handler.docs
+    # xml.sax.parse('o.txt', handler)
+    # docs = handler.docs
     # Test
 
 
 
     # Main
-    # root_directory = "./wellFormatedXML"
-    # for dirpath, dirname,filenames in os.walk(root_directory):
-    #     for filename in filenames:
-    #         file_path = os.path.join(dirpath, filename)
+    root_directory = "./wellFormatedXML"
+    for dirpath, dirname,filenames in os.walk(root_directory):
+        for filename in filenames:
+            file_path = os.path.join(dirpath, filename)
+            # parse the XML file using the handler
+            xml.sax.parse(file_path, handler)
 
-    #         # parse the XML file using the handler
-    #         xml.sax.parse(file_path, handler)
-
-    # # docs = ''
-    # # for i in range(len(handler.docs)):
-    # #     docs = docs + handler.docs[i]["Body"]
-    # docs = handler.docs
+    # docs = ''
+    # for i in range(len(handler.docs)):
+    #     docs = docs + handler.docs[i]["Body"]
+    docs = handler.docs
     # #Main
 
 
@@ -234,95 +233,16 @@ def DocId2Text(DocId,docs):
 
 
 
-
-
-
-
-###################### System Evaluation #####################
-
-
-# it shoud read docs from file or DB
-def ValidationSet(docs):
-    # input  =>  {"DocID": {"Body": ,"Name": }}
-    # output =>  {'fileName1': [DocId1, DocId2, DocId3], 'fileName2': [DocId4, DocId5, DocId6]}
-
-    ValidationSet = {}
-    for DocId in docs.keys():
-        fileName = docs[DocId]["Name"]
-
-        if fileName in ValidationSet.keys():
-            ValidationSet[fileName].append(DocId)
-        else:
-            # DocId = item
-            ValidationSet[fileName] = [DocId]
-
-
-    # return len(ValidationSet)
-    return ValidationSet
+def Score(entry1,Index):
+    # input : Query , Index
+    # output: sorted list of scores of each document
 
 
 
 
 
-
-
-def Recall_K(relevency_list, validation_set,entry):
-    # tp : True Positive
-    relevent = relevency_list.count(1)
-
-    # تعداد کل داکیومنت هایی که نام فایلشان با کوعری برابر است
-    total_relevent = len(validation_set[entry])
-
-    Recall = relevent / total_relevent
-
-    return Recall
-
-
-
-
-
-
-def Precision_K(relevency_list):
-    # tp : True Positive
-    tp = relevency_list.count(1)
-    total = len(relevency_list)
-
-    precision = tp / total
-
-
-    return precision
-
-
-
-
-
-
-
-
-
-
-# To see the process step by step, Run the following lines one by one
-
-docs=Fetch_Docs()
-# print(docs)
-# print(Dict2Str(Fetch_Docs()))
-# print(Tokenizer(Dict2Str(docs)))
-# print(invertedIndex(Tokenizer(Dict2Str(docs)),docs))
-
-# print("\n\nuncomment lines 54-64 and comment lines 47-48 to make index with origin data.\n")
-
-
-
-
-Index = invertedIndex(Tokenizer(Dict2Str(docs)),docs)
-# print(Index)
-
-
-while True:
-    entry1 = input("Entry : ")
     entry = Tokenizer(entry1)
-    print('this is entry : ', entry)
-
+    # print('this is entry : ', entry)
 
     score = {}
     for query_term in entry:    
@@ -330,14 +250,14 @@ while True:
         # print('\n',Index[query_term],'\n')
 
             PostingList = prompt(query_term,Index)
-            print('\nPosting list: ',PostingList,'\n')
+            # print('\nPosting list: ',PostingList,'\n')
             # print(len(PostingList))
 
 
             DocId=[]
             for x in PostingList:
                 DocId.append(x[0])
-            print('DocId',DocId,'\n')
+            # print('DocId',DocId,'\n')
 
 
             tf_idf = []
@@ -345,7 +265,8 @@ while True:
                 tf = x[1]
                 iDF = Index[query_term]["iDF"]
                 tf_idf.append(round((tf*iDF),2))
-            print('tf_idf: ',tf_idf,'\n\n')
+            # print('tf_idf: ',tf_idf,'\n\n')
+
 
 
             # make score with DocId and tf_idf => {'DocId': tf_idf, 'DocId': tf_idf} => e.g. {'1': 3.5 ,'7': 13.9}
@@ -381,38 +302,44 @@ while True:
 
     #   حالا لول بعدی اینکه که سمنتیک هم لحاظ کنیم
 
-
-
-
-
-
         except BaseException:
             # logging.exception("*Error goes here*")
             print("Not Exist!\n")
 
     print('\n',score,'\n\n')
 
-
-
     # Sort Ascending
     sorted_score = {k: v for k, v in sorted(score.items(), key=lambda item: item[1],reverse=True)}
     # sorted_score = {k: v for k, v in sorted(score.items(), key=lambda item: item[1])}
-    print(sorted_score,'\n\n')
+    # print(sorted_score,'\n\n')
 
 
 
-    # return top 5
-    first5pairs = {k: sorted_score[k] for k in list(sorted_score)[:5]}        
-    print(first5pairs,'\n\n')
 
-
-
+    return sorted_score
 
 
 
 
 
-    # Pseudo Code
+
+
+
+def Top_K_doc(k,doc_scores):
+    # input : k and document score with following format ====> SCORE = {'DocId1': score1, 'DocId2': score2, ...}
+    # output: top K element of SCORE based on value
+    return {n: doc_scores[n] for n in list(doc_scores)[:k]}
+
+
+
+
+
+
+def Evaluation(top_K_docid,docs,entry1):
+
+
+
+    ############## Pseudo Code ###############
     # System Evaluation : Average Percision and Mean Average Percision
     # for each query return R@k/P@k than Average Percision and finally for all query return MAP
     #
@@ -430,14 +357,13 @@ while True:
     # print final doc and result( R@k/P@k => AP => MAP)
     #    docs  : {"DocID": {"Body": ,"Name": }}
 
-
+    Precision = 0
     relevency=[]
     # it is binery representaion of relevency => 0 : Not relevent,
     #                                            1 : relevent
 
-    top_K_doc = list(first5pairs.keys())
-    for Docid in top_K_doc:
-        print(DocId2Text(int(Docid),docs),'\n\n')
+    for Docid in top_K_docid:
+        print(DocId2Text(int(Docid),docs),'\n')
 
         # [5:] => convert 2007_carName to carName
         fileName = docs[int(Docid)]["Name"][5:]
@@ -447,14 +373,53 @@ while True:
         else:
             relevency.append(0)
             print(entry1 ,'!=',fileName)
+        
+        print('Precision:',Precision_K(relevency))
+        Precision += Precision_K(relevency)
+
+        try:
+            print('Recall: ',Recall_K(relevency,VSet,entry1),'\n\n\n')
+        except:
+            print('Please Enter A Valid Query(file name)')
 
 
-    print('relevency: ',relevency)
-
-
-
-
+    try:
+        total_doc = len(top_K_docid)
+        Average_Precision = Precision / total_doc
+        print('Average Precision: ', Average_Precision)
+    except:
+        print('No Match!')
+    # print('relevency: ',relevency)
     # print('validation set : ',ValidationSet(docs))
+    # print('Recall: ',Recall_K(relevency,VSet,entry1))
+
+    Recall = Recall_K(relevency,VSet,entry1)
+
+
+    return [Average_Precision, Recall]
+
+
+
+
+###################### System Evaluation Functions #####################
+
+
+# it shoud read docs from file or DB
+def ValidationSet(docs):
+    # input  =>  {"DocID": {"Body": ,"Name": }}
+    # output =>  {'fileName1': [DocId1, DocId2, DocId3], 'fileName2': [DocId4, DocId5, DocId6]}
+
+    ValidationSet = {}
+    for DocId in docs.keys():
+        fileName = docs[DocId]["Name"][5:]
+
+        if fileName in ValidationSet.keys():
+            ValidationSet[fileName].append(DocId)
+        else:
+            ValidationSet[fileName] = [DocId]
+
+
+    return ValidationSet
 
 
 
@@ -462,3 +427,98 @@ while True:
 
 
 
+def Recall_K(relevency_list, validation_set,entry):
+    # tp : True Positive
+    relevent = relevency_list.count(1)
+    # تعداد کل داکیومنت هایی که نام فایلشان با کوعری برابر است
+    total_relevent = len(validation_set[entry])
+    Recall = relevent / total_relevent
+
+    return Recall
+
+
+
+
+
+
+def Precision_K(relevency_list):
+    # tp : True Positive
+    tp = relevency_list.count(1)
+    total = len(relevency_list)
+    precision = tp / total
+
+    return precision
+
+
+
+
+
+
+
+
+
+
+# To see the process step by step, Run the following lines one by one
+
+docs=Fetch_Docs()
+# print(docs)
+# print(Dict2Str(Fetch_Docs()))
+# print(Tokenizer(Dict2Str(docs)))
+# print(invertedIndex(Tokenizer(Dict2Str(docs)),docs))
+
+# print("\n\nuncomment lines 58-68 and comment lines 51-52 to make index with origin data.\n")
+
+
+
+
+
+
+
+Index = invertedIndex(Tokenizer(Dict2Str(docs)),docs)
+VSet = ValidationSet(docs)
+# print(Index.keys())
+
+
+# while True:
+#     entry1 = input("Entry : ")
+
+#     sorted_score = Score(entry1, Index)
+
+#     # return top 5
+#     first5pairs = Top_K_doc(5,sorted_score)
+#     top_K_docid = list(first5pairs.keys())
+#     Evaluation(top_K_docid, docs)
+
+
+
+
+
+
+# print(list(VSet.keys()))
+
+
+
+
+
+
+
+
+Mean_Average_precision = 0
+Recall = 0
+for filename in list(VSet.keys()):
+
+    sorted_score = Score(filename, Index)
+
+    # return top 5
+    first5pairs = Top_K_doc(5,sorted_score)
+    top_K_docid = list(first5pairs.keys())
+    Mean_Average_precision += Evaluation(top_K_docid, docs,filename)[0]
+    Recall += Evaluation(top_K_docid, docs,filename)[1]
+    # print('aadsf is :',Mean_Average_precision)
+
+
+
+total_query = len(list(VSet.keys()))
+print(total_query)
+print('Mean_Average_precision: ', Mean_Average_precision / total_query )
+print('Average_Recall: ', Recall / total_query )
