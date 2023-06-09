@@ -306,7 +306,7 @@ def Score(entry1,Index):
             # logging.exception("*Error goes here*")
             print("Not Exist!\n")
 
-    print('\n',score,'\n\n')
+    # print('\n',score,'\n\n')
 
     # Sort Ascending
     sorted_score = {k: v for k, v in sorted(score.items(), key=lambda item: item[1],reverse=True)}
@@ -387,16 +387,18 @@ def Evaluation(top_K_docid,docs,entry1):
         total_doc = len(top_K_docid)
         Average_Precision = Precision / total_doc
         print('Average Precision: ', Average_Precision)
+        Recall = Recall_K(relevency,VSet,entry1)
+        f1 = ( 2 * Recall * Average_Precision ) / ( Recall + Average_Precision )
     except:
         print('No Match!')
+        f1 = 0
     # print('relevency: ',relevency)
     # print('validation set : ',ValidationSet(docs))
     # print('Recall: ',Recall_K(relevency,VSet,entry1))
 
-    Recall = Recall_K(relevency,VSet,entry1)
 
 
-    return [Average_Precision, Recall]
+    return [Average_Precision, Recall, f1]
 
 
 
@@ -479,15 +481,15 @@ VSet = ValidationSet(docs)
 # print(Index.keys())
 
 
-# while True:
-#     entry1 = input("Entry : ")
+while True:
+    entry1 = input("Entry : ")
 
-#     sorted_score = Score(entry1, Index)
+    sorted_score = Score(entry1, Index)
 
-#     # return top 5
-#     first5pairs = Top_K_doc(5,sorted_score)
-#     top_K_docid = list(first5pairs.keys())
-#     Evaluation(top_K_docid, docs)
+    # return top 5
+    first5pairs = Top_K_doc(5,sorted_score)
+    top_K_docid = list(first5pairs.keys())
+    Evaluation(top_K_docid, docs, entry1)
 
 
 
@@ -503,22 +505,34 @@ VSet = ValidationSet(docs)
 
 
 
-Mean_Average_precision = 0
-Recall = 0
-for filename in list(VSet.keys()):
+# Mean_Average_precision = 0
+# Recall = 0
+# F_Measure = 0
+# k = [20]
 
-    sorted_score = Score(filename, Index)
 
-    # return top 5
-    first5pairs = Top_K_doc(5,sorted_score)
-    top_K_docid = list(first5pairs.keys())
-    Mean_Average_precision += Evaluation(top_K_docid, docs,filename)[0]
-    Recall += Evaluation(top_K_docid, docs,filename)[1]
-    # print('aadsf is :',Mean_Average_precision)
+# for i in k:
+#     for filename in list(VSet.keys()):
+
+#         sorted_score = Score(filename, Index)
 
 
 
-total_query = len(list(VSet.keys()))
-print(total_query)
-print('Mean_Average_precision: ', Mean_Average_precision / total_query )
-print('Average_Recall: ', Recall / total_query )
+#         # return top k
+#         top_K = Top_K_doc(i,sorted_score)
+#         top_K_docid = list(top_K.keys())
+#         Mean_Average_precision += Evaluation(top_K_docid, docs,filename)[0]
+#         Recall += Evaluation(top_K_docid, docs,filename)[1]
+#         F_Measure += Evaluation(top_K_docid, docs,filename)[2]
+#         # print('aadsf is :',Mean_Average_precision)
+
+
+
+#     total_query = len(list(VSet.keys()))
+#     # print(total_query)
+#     print('##################################################')
+#     print('K = ',i)
+#     print('Mean_Average_precision: ', Mean_Average_precision / total_query )
+#     print('Average_Recall: ', Recall / total_query )
+#     print('Average_F_Measure: ', F_Measure / total_query )
+#     print('##################################################')
