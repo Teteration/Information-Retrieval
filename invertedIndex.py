@@ -88,7 +88,6 @@ def Fetch_Docs():
 
 
 def Dict2Str(dict):
-
     # get a dictionary with following format => {"DocId": {"Body": ,"Name": }} and return its "Body" key
 
     String =''
@@ -177,14 +176,10 @@ def invertedIndex(tokens, docs):
 
         PostingList={"iDF":0, "docs":[]}
         for n in docs.keys():
-
             if tokens[m] in docs[n]["Body"].lower():
                 # w(t,d) instead tf
-                tf = docs[n]["Body"].count(tokens[m])
-                if tf > 0:
-                    wtd = round((1 + math.log(tf)),2)
-                else:
-                    tf = 0
+                tf = docs[n]["Body"].lower().count(tokens[m])
+                wtd = round((1 + math.log(tf)),2)
 
                 PostingList["docs"].append([n,wtd])
                 PostingList["iDF"] = PostingList["iDF"] + 1
@@ -198,15 +193,9 @@ def invertedIndex(tokens, docs):
         if df != 0:
             PostingList["iDF"] = round(math.log(Nd/df),2)
 
-
-
         index[tokens[m]] = PostingList
 
 
-
-                # index[tokens[m]] = json.dumps(PostingList)
-                # final_index = json.dumps(index)
-    # print(docs.keys())
     return index
 
 
@@ -233,7 +222,7 @@ def DocId2Text(DocId,docs):
 
 
 
-def Score(entry1,Index):
+def Score(entry1,Index,docs):
     # input : Query , Index
     # output: sorted list of scores of each document
 
@@ -273,14 +262,16 @@ def Score(entry1,Index):
             for key in DocId:
                 for value in tf_idf:
                     if str(key) in score.keys():
-                        score[str(key)] += value
+                        # score[str(key)] += value # score based on TF.IDF
+                        score[str(key)] += value / len(Tokenizer(docs[key]["Body"])) # score based on cosine
                         score[str(key)] = round(score[str(key)],2)
                     else:
-                        score[str(key)] = value
+                        # score[str(key)] = value # score based on TF.IDF
+                        score[str(key)] = value/ len(Tokenizer(docs[key]["Body"])) # score based on cosine
                         score[str(key)] = round(score[str(key)],2)
                     tf_idf.remove(value)
                     break
-            # print('\n',score)
+            # print('\nscores: ',score)
 
 
 
@@ -311,7 +302,7 @@ def Score(entry1,Index):
     # Sort Ascending
     sorted_score = {k: v for k, v in sorted(score.items(), key=lambda item: item[1],reverse=True)}
     # sorted_score = {k: v for k, v in sorted(score.items(), key=lambda item: item[1])}
-    # print(sorted_score,'\n\n')
+    print(sorted_score,'\n\n')
 
 
 
@@ -481,15 +472,22 @@ VSet = ValidationSet(docs)
 # print(Index.keys())
 
 
-while True:
-    entry1 = input("Entry : ")
+for key in Index.keys():
+    print(prompt(key,Index))
 
-    sorted_score = Score(entry1, Index)
 
-    # return top 5
-    first5pairs = Top_K_doc(5,sorted_score)
-    top_K_docid = list(first5pairs.keys())
-    Evaluation(top_K_docid, docs, entry1)
+
+
+
+# while True:
+#     entry1 = input("Entry : ")
+
+#     sorted_score = Score(entry1, Index, docs)
+
+#     # return top 5
+#     first5pairs = Top_K_doc(5,sorted_score)
+#     top_K_docid = list(first5pairs.keys())
+#     Evaluation(top_K_docid, docs, entry1)
 
 
 
